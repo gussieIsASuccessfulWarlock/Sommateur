@@ -9,6 +9,7 @@ find_package(CURL REQUIRED)
 add_executable(sommateur sommateur.cpp)
 
 if(WIN32)
+  target_compile_definitions(sommateur PRIVATE PATH_MAX=260)
   target_link_libraries(sommateur PRIVATE CURL::libcurl)
 else()
   target_link_libraries(sommateur PRIVATE CURL::libcurl pthread)
