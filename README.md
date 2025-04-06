@@ -12,9 +12,9 @@ Sommateur can:
 
 ### Releases
 
-- [Linux](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.1/sommateur-linux-latest)
-- [Windows](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.1/sommateur-windows-latest.exe)
-- [Mac](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.1/sommateur-macos-latest)
+- [Linux](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.2/sommateur-linux-latest)
+- [Windows](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.2/sommateur-windows-latest.exe)
+- [Mac](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.2/sommateur-macos-latest)
 
 ### Building from Source on Linux
 
