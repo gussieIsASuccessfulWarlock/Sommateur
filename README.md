@@ -10,7 +10,15 @@ Sommateur can:
 
 ## Installation
 
-### Prerequisites
+### Releases
+
+- [Linux](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.0/sommateur-ubuntu-latest)
+- [Windows](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.0/sommateur-windows-latest.exe)
+- [Mac](https://github.com/gussieIsASuccessfulWarlock/Sommateur/releases/download/v1.0.0/sommateur-macos-latest)
+
+### Building from Source on Linux
+
+Prerequisites:
 
 - C++ compiler (g++ recommended) with C++17 support
 - `libcurl` development package
@@ -22,8 +30,6 @@ Sommateur can:
   - `thread`, `mutex`, `condition_variable`
   - `atomic`, `chrono`, `future`
 
-### Building from Source
-
 Compile with:
 
 ```bash
@@ -31,16 +37,6 @@ g++ -o sommateur sommateur.cpp -lcurl -std=c++17 -pthread
 ```
 
 This creates the executable `sommateur`.
-
-### Platform Support
-
-Compatible with:
-
-- Windows
-- Linux
-- macOS
-
----
 
 ## Command Syntax
 
