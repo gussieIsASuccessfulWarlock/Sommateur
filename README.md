@@ -1,8 +1,8 @@
 # Sommateur
 
-Sommateur is a multi-threaded command-line utility originally developed for CyberPatriot to identify system modifications by managing file integrity using CRC32 checksums. It's publicly available prior to CyberPatriot 18 to provide a reliable baseline for developers working on similar projects.
+I originally wrote Sommateur as a command-line utility for CyberPatriot to identify system file modifications quickly using CRC32 checksums. As I am no longer in the CyberPatriot program, I'm making it public to act as a reliable baseline for competitors working on similar projects.
 
-Sommateur recursively processes directories to:
+Sommateur can:
 
 - Generate and display checksums for all files
 - Save checksums to a binary baseline file for future comparisons
@@ -134,4 +134,4 @@ sommateur /home/user -t 1000  # skips files taking longer than 1 second
 
 ## License
 
-Sommateur is distributed under the Apache License 2.0. You may modify and redistribute Sommateur in compliance with this license.
+Sommateur is distributed under the Apache License 2.0.
