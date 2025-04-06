@@ -98,3 +98,11 @@ jobs:
       if: runner.os == 'Windows'
       shell: cmd
       run: cd "%GITHUB_WORKSPACE%\build" && ctest --build-config Release
+
+    - name: Upload binary artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sommateur-${{ matrix.os }}-${{ matrix.cpp_compiler }}
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/sommateur*
+          ${{ steps.strings.outputs.build-output-dir }}/Release/sommateur*
