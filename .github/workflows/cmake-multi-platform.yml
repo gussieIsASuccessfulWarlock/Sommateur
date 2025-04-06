@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies (Linux)
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -25,7 +25,7 @@ jobs:
             libcurl4-openssl-dev \
             git
 
-      - name: Configure CMake (g++)
+      - name: Configure CMake (Linux, g++)
         run: |
           cmake -B build -S . \
             -DCMAKE_C_COMPILER=gcc \
@@ -34,104 +34,94 @@ jobs:
             -DCMAKE_CXX_FLAGS_INIT="-static-libstdc++ -ffile-prefix-map=${{ github.workspace }}=. -fdebug-prefix-map=${{ github.workspace }}=. -fno-record-gcc-switches" \
             -DCMAKE_C_FLAGS_INIT="-ffile-prefix-map=${{ github.workspace }}=. -fdebug-prefix-map=${{ github.workspace }}=. -fno-record-gcc-switches"
 
-      - name: Build
+      - name: Build (Linux)
         run: cmake --build build --config Release
 
-      - name: Test
+      - name: Test (Linux)
         run: cd build && ctest --build-config Release
 
-      - name: Upload binary artifact
+      - name: Upload binary artifact (Linux)
         uses: actions/upload-artifact@v4
         with:
           name: sommateur-linux-gcc
-          path: |
-            build/sommateur*
+          path: build/sommateur*
 
-  build-other:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest]
-        build_type: [Release]
-        c_compiler: [clang, cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: clang
-          - os: macos-latest
-            c_compiler: cl
-
+  build-macos:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set reusable strings
-        id: strings
-        shell: bash
-        run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: Install libcurl on macOS
-        if: runner.os == 'macOS'
+      - name: Install dependencies (macOS)
         run: brew install curl
 
-      - name: Install vcpkg and libcurl on Windows
-        if: runner.os == 'Windows'
+      - name: Configure CMake (macOS)
+        run: |
+          cmake -B build -S . \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_FLAGS_INIT="-ffile-prefix-map=${{ github.workspace }}=. -fdebug-prefix-map=${{ github.workspace }}=. -fno-record-gcc-switches" \
+            -DCMAKE_C_FLAGS_INIT="-ffile-prefix-map=${{ github.workspace }}=. -fdebug-prefix-map=${{ github.workspace }}=. -fno-record-gcc-switches"
+
+      - name: Build (macOS)
+        run: cmake --build build --config Release
+
+      - name: Test (macOS)
+        run: cd build && ctest --build-config Release
+
+      - name: Upload binary artifact (macOS)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sommateur-macos
+          path: build/sommateur*
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install vcpkg (Windows)
         shell: cmd
         run: |
           if not exist "%GITHUB_WORKSPACE%\vcpkg" (
             git clone https://github.com/microsoft/vcpkg.git "%GITHUB_WORKSPACE%\vcpkg"
             call "%GITHUB_WORKSPACE%\vcpkg\bootstrap-vcpkg.bat"
           )
-          "%GITHUB_WORKSPACE%\vcpkg\vcpkg.exe" install curl
 
-      - name: Configure CMake on Unix
-        if: runner.os != 'Windows'
-        run: |
-          cmake -B "${{ steps.strings.outputs.build-output-dir }}" \
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -DCMAKE_CXX_FLAGS_INIT="-ffile-prefix-map=${{ github.workspace }}=. -fdebug-prefix-map=${{ github.workspace }}=. -fno-record-gcc-switches" \
-                -DCMAKE_C_FLAGS_INIT="-ffile-prefix-map=${{ github.workspace }}=. -fdebug-prefix-map=${{ github.workspace }}=. -fno-record-gcc-switches" \
-                -S "${{ github.workspace }}"
-
-      - name: Configure CMake on Windows
-        if: runner.os == 'Windows'
+      - name: Install curl statically (Windows)
         shell: cmd
         run: |
-          cmake -B "%GITHUB_WORKSPACE%\build" -DCMAKE_CXX_COMPILER=%CPP_COMPILER% -DCMAKE_C_COMPILER=%C_COMPILER% -DCMAKE_TOOLCHAIN_FILE="%GITHUB_WORKSPACE%\vcpkg\scripts\buildsystems\vcpkg.cmake" -S "%GITHUB_WORKSPACE%"
-        env:
-          CPP_COMPILER: ${{ matrix.cpp_compiler }}
-          C_COMPILER: ${{ matrix.c_compiler }}
+          REM Install libcurl in static mode so that no DLL is required at runtime.
+          "%GITHUB_WORKSPACE%\vcpkg\vcpkg.exe" install curl[winssl]:x64-windows-static
 
-      - name: Build on Unix
-        if: runner.os != 'Windows'
-        run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }}
+      - name: Configure CMake (Windows, static linking)
+        shell: cmd
+        run: |
+          REM Use the static vcpkg triplet (x64-windows-static).
+          REM Also set MSVC runtime library to MultiThreaded (/MT) for a fully self-contained exe.
+          cmake -B "%GITHUB_WORKSPACE%\build" ^
+            -DCMAKE_C_COMPILER=cl ^
+            -DCMAKE_CXX_COMPILER=cl ^
+            -DCMAKE_TOOLCHAIN_FILE="%GITHUB_WORKSPACE%\vcpkg\scripts\buildsystems\vcpkg.cmake" ^
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+            -S "%GITHUB_WORKSPACE%"
 
-      - name: Build on Windows
-        if: runner.os == 'Windows'
+      - name: Build (Windows)
         shell: cmd
         run: cmake --build "%GITHUB_WORKSPACE%\build" --config Release
 
-      - name: Test on Unix
-        if: runner.os != 'Windows'
-        run: cd "${{ steps.strings.outputs.build-output-dir }}" && ctest --build-config ${{ matrix.build_type }}
-
-      - name: Test on Windows
-        if: runner.os == 'Windows'
+      - name: Test (Windows)
         shell: cmd
-        run: cd "%GITHUB_WORKSPACE%\build" && ctest --build-config Release
+        run: |
+          cd "%GITHUB_WORKSPACE%\build"
+          ctest --build-config Release
 
-      - name: Upload binary artifact
+      - name: Upload binary artifact (Windows)
         uses: actions/upload-artifact@v4
         with:
-          name: sommateur-${{ matrix.os }}-${{ matrix.cpp_compiler }}
+          name: sommateur-windows-latest
           path: |
-            ${{ steps.strings.outputs.build-output-dir }}/sommateur*
-            ${{ steps.strings.outputs.build-output-dir }}/Release/sommateur*
+            build\Release\sommateur.exe
+            build\sommateur.exe
