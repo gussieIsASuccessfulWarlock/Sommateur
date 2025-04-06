@@ -1,4 +1,4 @@
-name: C++ Build on Multiple Platforms
+name: Reproducible C++ Build on Multiple Platforms
 
 on:
   push:
@@ -48,6 +48,16 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Install libcurl on Ubuntu
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libcurl4-openssl-dev
+
+    - name: Install libcurl on macOS
+      if: runner.os == 'macOS'
+      run: brew install curl
 
     - name: Configure CMake
       run: >
