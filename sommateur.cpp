@@ -380,9 +380,13 @@ int main(int argc, char* argv[]) {
     }
 
     if (!skippedFiles.empty()) {
-        std::cout << "\n⚠️  Skipped files due to timeout (" << skippedFiles.size() << "):\n";
-        for (const auto& path : skippedFiles) {
-            std::cout << " - " << path << std::endl;
+        if (isVerboseMode) {
+            std::cout << "\n⚠️  Skipped files due to timeout (" << skippedFiles.size() << "):\n";
+            for (const auto& path : skippedFiles) {
+                std::cout << " - " << path << std::endl;
+            }
+        } else {
+            std::cout << "\n⚠️  Skipped files due to timeout (" << skippedFiles.size() << ")\n";
         }
     }
 
